@@ -1,6 +1,7 @@
 
 use super::clicker;
 use super::ui;
+use super::utils;
 
 #[derive(Default)]
 pub struct App {
@@ -23,7 +24,7 @@ impl eframe::App for App {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        ui::custom_window_frame(ctx, frame, "egui with custom frame", |ui| {
+        ui::custom_window_frame(ctx, frame, utils::get_name().as_str(), |ui| {
             clicker::render_ui(self, ui);
         });
     }

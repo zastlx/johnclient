@@ -24,7 +24,7 @@ pub fn custom_window_frame(
     let panel_frame = egui::Frame {
         fill: ctx.style().visuals.window_fill(),
         rounding: 6.0.into(),
-        stroke: ctx.style().visuals.widgets.noninteractive.fg_stroke,
+        stroke: Stroke::new(2.0, Color32::from_rgb(120, 81, 169)),
         outer_margin: 0.5.into(),
         ..Default::default()
     };
