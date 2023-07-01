@@ -14,7 +14,7 @@ pub struct App {
     pub block_hit_min: i32,
     pub block_hit_max: i32,
     pub jitter_x: i32,
-    pub jitter_y: i32,
+    pub jitter_y: i32
 }
 
 impl eframe::App for App {
