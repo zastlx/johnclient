@@ -3,8 +3,7 @@
 mod mods;
 
 fn main() -> Result<(), eframe::Error> {
-    mods::clicker::register_hooks();
-
+    mods::clicker::hook_reg();
     let options = eframe::NativeOptions {
         decorated: false,
         transparent: true,
