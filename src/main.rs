@@ -8,7 +8,7 @@ fn main() -> Result<(), eframe::Error> {
         decorated: false,
         transparent: true,
         min_window_size: Some(egui::vec2(400.0, 100.0)),
-        initial_window_size: Some(egui::vec2(300.0, 400.0)),
+        initial_window_size: Some(egui::vec2(350.0, 500.0)),
         initial_window_pos: Some(egui::pos2(0.0, 0.0)),
         always_on_top: true,
         ..Default::default()

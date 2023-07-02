@@ -40,7 +40,7 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Left");
-            h.checkbox(&mut _self.left, "Enable left clicker");
+            h.checkbox(&mut _self.left, "");
             h.add(KeyBindWidget::new(&mut _self.bind.left.as_mut().unwrap()));
         });
         g.vertical_centered(|v| {
@@ -51,7 +51,7 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Right");
-            h.checkbox(&mut _self.right, "Enable right clicker");
+            h.checkbox(&mut _self.right, "");
             h.add(KeyBindWidget::new(&mut _self.bind.right.as_mut().unwrap()));
         });
         g.vertical_centered(|v| {
@@ -62,7 +62,7 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Block Hit");
-            h.checkbox(&mut _self.block_hit, "Enable block hitting");
+            h.checkbox(&mut _self.block_hit, "");
             h.add(KeyBindWidget::new(
                 &mut _self.bind.block_hit.as_mut().unwrap(),
             ));
@@ -85,6 +85,18 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
             v.add(egui::widgets::Slider::new(&mut _self.jitter_y, 0..=100).text("Y"));
         });
     });
+    ui.separator();
+    if ui.button("Destruct").clicked() {
+        let mut binds = BINDS.lock().ignore_poison();
+        binds.clear();
+        let mut conf = CONF.lock().ignore_poison();
+        conf.clear();
+        let mut vals = VALS.lock().ignore_poison();
+        vals.clear();
+        drop(_self);
+        std::process::exit(0);
+        return;
+    }
     let mut binds = BINDS.lock().ignore_poison();
     binds.insert(
         "left".to_string(),
