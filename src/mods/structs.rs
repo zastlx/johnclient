@@ -1,14 +1,8 @@
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-use strum_macros::Display;
 use egui_keybinds::*;
 
 use super::clicker;
 use super::ui;
 use super::utils;
-
-use egui::{Key, Modifiers};
-
 
 type Binding = Option<KeyBind>;
 

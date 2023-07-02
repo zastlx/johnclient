@@ -1,18 +1,13 @@
 use egui_keybinds::KeyBind;
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-
 use egui::*;
 use egui_keybinds::*;
 use enigo::*;
-use key_names::*;
 use lazy_static::lazy_static;
 use mki::*;
 use rand::Rng;
-use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fmt::Error;
-use std::sync::{Arc, LockResult, Mutex, RwLock};
+use std::sync::{Arc, LockResult, Mutex};
 use std::thread;
 
 use super::structs;
@@ -40,8 +35,8 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Left");
-            h.checkbox(&mut _self.left, "");
-            h.add(KeyBindWidget::new(&mut _self.bind.left.as_mut().unwrap()));
+            h.checkbox(&mut _self.left, "").on_hover_text("Left clicking will attack players");
+            h.add(KeyBindWidget::new(&mut _self.bind.left.as_mut().unwrap())).on_hover_text("Toggle left clicking");
         });
         g.vertical_centered(|v| {
             v.add(egui::widgets::Slider::new(&mut _self.left_min, 0..=100).text("Min"));
@@ -51,8 +46,8 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Right");
-            h.checkbox(&mut _self.right, "");
-            h.add(KeyBindWidget::new(&mut _self.bind.right.as_mut().unwrap()));
+            h.checkbox(&mut _self.right, "").on_hover_text("Right clicking will place blocks");
+            h.add(KeyBindWidget::new(&mut _self.bind.right.as_mut().unwrap())).on_hover_text("Toggle right clicking");
         });
         g.vertical_centered(|v| {
             v.add(egui::widgets::Slider::new(&mut _self.right_min, 0..=100).text("Min"));
@@ -62,10 +57,10 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Block Hit");
-            h.checkbox(&mut _self.block_hit, "");
+            h.checkbox(&mut _self.block_hit, "").on_hover_text("Block hitting reduces some of your damage");
             h.add(KeyBindWidget::new(
                 &mut _self.bind.block_hit.as_mut().unwrap(),
-            ));
+            )).on_hover_text("Toggle block hitting");
         });
         g.vertical_centered(|v| {
             v.add(egui::widgets::Slider::new(&mut _self.block_hit_min, 0..=100).text("Min"));
@@ -76,17 +71,14 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Jitter");
-            h.add(KeyBindWidget::new(
-                &mut _self.bind.block_hit.as_mut().unwrap(),
-            ));
         });
         g.vertical_centered(|v| {
-            v.add(egui::widgets::Slider::new(&mut _self.jitter_x, 0..=100).text("X"));
-            v.add(egui::widgets::Slider::new(&mut _self.jitter_y, 0..=100).text("Y"));
+            v.add(egui::widgets::Slider::new(&mut _self.jitter_x, 0..=100).text("X")).on_hover_text("Jitter min/max on the X axis");
+            v.add(egui::widgets::Slider::new(&mut _self.jitter_y, 0..=100).text("Y")).on_hover_text("Jitter min/max on the Y axis");
         });
     });
     ui.separator();
-    if ui.button("Destruct").clicked() {
+    if ui.button("Destruct").on_hover_text("Forcefully destruct the client").clicked() {
         let mut binds = BINDS.lock().ignore_poison();
         binds.clear();
         let mut conf = CONF.lock().ignore_poison();
@@ -95,7 +87,6 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
         vals.clear();
         drop(_self);
         std::process::exit(0);
-        return;
     }
     let mut binds = BINDS.lock().ignore_poison();
     binds.insert(
@@ -191,15 +182,14 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
 }
 
 pub fn hook_reg() {
-    mki::bind_any_key(mki::Action::handle_kb(|event| {
+    mki::bind_any_key(mki::Action::handle_kb(|_event| {
         let mut enigo = Enigo::new();
-        let mut locked_v = VALS.lock().ignore_poison();
+        let locked_v = VALS.lock().ignore_poison();
         let locked_c = CONF.lock().ignore_poison();
         let locked_b = BINDS.lock().ignore_poison();
         let _vals_obj = locked_v;
         let _conf_obj = locked_c;
         let _binds_obj = locked_b;
-        let left = _conf_obj.get("left").unwrap();
         let bindl = _binds_obj.get("left").unwrap();
         let bindr = _binds_obj.get("right").unwrap();
         let bindb = _binds_obj.get("block_hit").unwrap();
@@ -215,10 +205,10 @@ pub fn hook_reg() {
                 let delay =
                     rand::thread_rng().gen_range(min_delay.to_owned()..max_delay.to_owned());
                 thread::sleep(std::time::Duration::from_millis(delay as u64));
-                let mut x = *_vals_obj.get("jitter_x").unwrap();
-                let mut y = *_vals_obj.get("jitter_y").unwrap();
-                let mut jitter_x = rand::thread_rng().gen_range(-x..x);
-                let mut jitter_y = rand::thread_rng().gen_range(-y..y);
+                let x = *_vals_obj.get("jitter_x").unwrap();
+                let y = *_vals_obj.get("jitter_y").unwrap();
+                let jitter_x = rand::thread_rng().gen_range(-x..x);
+                let jitter_y = rand::thread_rng().gen_range(-y..y);
                 enigo.mouse_move_relative(jitter_x, jitter_y);
                 enigo.mouse_down(MouseButton::Left);
                 let up_delay =
@@ -233,10 +223,10 @@ pub fn hook_reg() {
                 let delay =
                     rand::thread_rng().gen_range(min_delay.to_owned()..max_delay.to_owned());
                 thread::sleep(std::time::Duration::from_millis(delay as u64));
-                let mut x = *_vals_obj.get("jitter_x").unwrap();
-                let mut y = *_vals_obj.get("jitter_y").unwrap();
-                let mut jitter_x = rand::thread_rng().gen_range(-x..x);
-                let mut jitter_y = rand::thread_rng().gen_range(-y..y);
+                let x = *_vals_obj.get("jitter_x").unwrap();
+                let y = *_vals_obj.get("jitter_y").unwrap();
+                let jitter_x = rand::thread_rng().gen_range(-x..x);
+                let jitter_y = rand::thread_rng().gen_range(-y..y);
                 enigo.mouse_move_relative(jitter_x, jitter_y);
                 enigo.mouse_down(MouseButton::Right);
                 let up_delay =
@@ -251,10 +241,10 @@ pub fn hook_reg() {
                 let delay =
                     rand::thread_rng().gen_range(min_delay.to_owned()..max_delay.to_owned());
                 thread::sleep(std::time::Duration::from_millis(delay as u64));
-                let mut x = *_vals_obj.get("jitter_x").unwrap();
-                let mut y = *_vals_obj.get("jitter_y").unwrap();
-                let mut jitter_x = rand::thread_rng().gen_range(-x..x);
-                let mut jitter_y = rand::thread_rng().gen_range(-y..y);
+                let x = *_vals_obj.get("jitter_x").unwrap();
+                let y = *_vals_obj.get("jitter_y").unwrap();
+                let jitter_x = rand::thread_rng().gen_range(-x..x);
+                let jitter_y = rand::thread_rng().gen_range(-y..y);
                 enigo.mouse_move_relative(jitter_x, jitter_y);
                 enigo.mouse_down(MouseButton::Left);
                 let up_delay =
