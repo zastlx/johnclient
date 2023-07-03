@@ -1,5 +1,6 @@
-use eframe::{egui};
-use egui::{ Button, RichText };
+use eframe::egui;
+use egui::{Button, RichText};
+use std::sync::Arc;
 
 fn render_close(ui: &mut egui::Ui, frame: &mut eframe::Frame) {
     let button_height = 12.0;
@@ -12,7 +13,6 @@ fn render_close(ui: &mut egui::Ui, frame: &mut eframe::Frame) {
     }
 }
 
-
 pub fn custom_window_frame(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
@@ -20,6 +20,27 @@ pub fn custom_window_frame(
     add_contents: impl FnOnce(&mut egui::Ui),
 ) {
     use egui::*;
+
+    let mut fonts = FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "my_font".to_owned(),
+        FontData::from_static(include_bytes!("../../including/avant.ttf")),
+    );
+
+    fonts
+        .families
+        .get_mut(&FontFamily::Proportional)
+        .unwrap()
+        .insert(0, "my_font".to_owned());
+
+    fonts
+        .families
+        .get_mut(&FontFamily::Monospace)
+        .unwrap()
+        .push("my_font".to_owned());
+
+    ctx.set_fonts(fonts);
 
     let panel_frame = egui::Frame {
         fill: ctx.style().visuals.window_fill(),

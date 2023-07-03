@@ -32,6 +32,31 @@ impl<Guard> LockResultExt for LockResult<Guard> {
 }
 
 pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
+    if _self.jitter_x == 0 {
+        _self.jitter_x = 3;
+    }
+    if _self.jitter_y == 0 {
+        _self.jitter_y = 4;
+    }
+    if _self.left_min == 0 {
+        _self.left_min = 4;
+    }
+    if _self.left_max == 0 {
+        _self.left_max = 12;
+    }
+    if _self.right_min == 0 {
+        _self.right_min = 5;
+    }
+    if _self.right_max == 0 {
+        _self.right_max = 16;
+    }
+    if _self.block_hit_min == 0 {
+        _self.block_hit_min = 10;
+    }
+    if _self.block_hit_max == 0 {
+        _self.block_hit_max = 15;
+    }
+
     ui.group(|g| {
         g.horizontal(|h| {
             h.colored_label(Color32::from_rgb(120, 81, 169), "Left");
@@ -117,67 +142,35 @@ pub fn render_ui(_self: &mut structs::App, ui: &mut Ui) {
     let mut vals = VALS.lock().ignore_poison();
     vals.insert(
         "left_min".to_string(),
-        if _self.left_min == 0 {
-            4
-        } else {
-            _self.left_min
-        },
+        _self.left_min
     );
     vals.insert(
         "left_max".to_string(),
-        if _self.left_max == 0 {
-            12
-        } else {
-            _self.left_max
-        },
+        _self.left_max
     );
     vals.insert(
         "right_min".to_string(),
-        if _self.right_min == 0 {
-            5
-        } else {
-            _self.left_min
-        },
+        _self.right_min
     );
     vals.insert(
         "right_max".to_string(),
-        if _self.right_max == 0 {
-            16
-        } else {
-            _self.left_min
-        },
+        _self.right_max
     );
     vals.insert(
         "block_hit_min".to_string(),
-        if _self.block_hit_min == 0 {
-            10
-        } else {
-            _self.block_hit_min
-        },
+        _self.block_hit_min
     );
     vals.insert(
         "block_hit_max".to_string(),
-        if _self.block_hit_max == 0 {
-            15
-        } else {
-            _self.block_hit_max
-        },
+        _self.block_hit_max
     );
     vals.insert(
         "jitter_x".to_string(),
-        if _self.jitter_x == 0 {
-            4
-        } else {
-            _self.jitter_x
-        },
+        _self.jitter_x
     );
     vals.insert(
         "jitter_y".to_string(),
-        if _self.jitter_y == 0 {
-            10
-        } else {
-            _self.jitter_y
-        },
+        _self.jitter_y
     );
 }
 
@@ -196,9 +189,11 @@ pub fn hook_reg() {
         let kb = from_str(bindl.clone().serialize().as_str()).unwrap();
         let kb2 = from_str(bindr.clone().serialize().as_str()).unwrap();
         let kb3 = from_str(bindb.clone().serialize().as_str()).unwrap();
-        drop(_conf_obj);
+        let lef = _conf_obj.get("left").unwrap();
+        let rig = _conf_obj.get("right").unwrap();
+        let blo = _conf_obj.get("block_hit").unwrap();
         drop(_binds_obj);
-        if kb.is_pressed() {
+        if kb.is_pressed() && *lef {
             while kb.is_pressed() {
                 let min_delay = _vals_obj.get("left_min").unwrap();
                 let max_delay = _vals_obj.get("left_max").unwrap();
@@ -216,7 +211,7 @@ pub fn hook_reg() {
                 thread::sleep(std::time::Duration::from_millis(up_delay as u64));
                 enigo.mouse_up(MouseButton::Left);
             }
-        } else if kb2.is_pressed() {
+        } else if kb2.is_pressed() && *rig {
             while kb2.is_pressed() {
                 let min_delay = _vals_obj.get("left_min").unwrap();
                 let max_delay = _vals_obj.get("left_max").unwrap();
@@ -234,7 +229,7 @@ pub fn hook_reg() {
                 thread::sleep(std::time::Duration::from_millis(up_delay as u64));
                 enigo.mouse_up(MouseButton::Right);
             }
-        } else if kb3.is_pressed() {
+        } else if kb3.is_pressed() && *blo {
             while kb3.is_pressed() {
                 let min_delay = _vals_obj.get("block_hit_min").unwrap();
                 let max_delay = _vals_obj.get("block_hit_max").unwrap();
