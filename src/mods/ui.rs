@@ -1,6 +1,5 @@
 use eframe::egui;
 use egui::{Button, RichText};
-use std::sync::Arc;
 
 fn render_close(ui: &mut egui::Ui, frame: &mut eframe::Frame) {
     let button_height = 12.0;
@@ -44,8 +43,8 @@ pub fn custom_window_frame(
 
     let panel_frame = egui::Frame {
         fill: ctx.style().visuals.window_fill(),
-        rounding: 6.0.into(),
-        stroke: Stroke::new(2.0, Color32::from_rgb(120, 81, 169)),
+        rounding: 10.0.into(),
+        stroke: Stroke::new(6.0, Color32::from_rgb(120, 81, 169)),
         outer_margin: 0.5.into(),
         ..Default::default()
     };
@@ -53,12 +52,12 @@ pub fn custom_window_frame(
     CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
         let app_rect = ui.max_rect();
         let title_bar_height = 32.0;
-        let title_bar_rect = {
+        let mut title_bar_rect = {
             let mut rect = app_rect;
             rect.max.y = rect.min.y + title_bar_height;
             rect
         };
-        title_bar_ui(ui, frame, title_bar_rect, title);
+        title_bar_ui(ui, frame, &mut title_bar_rect, title);
 
         let content_rect = {
             let mut rect = app_rect;
@@ -74,18 +73,18 @@ pub fn custom_window_frame(
 fn title_bar_ui(
     ui: &mut egui::Ui,
     frame: &mut eframe::Frame,
-    title_bar_rect: eframe::epaint::Rect,
+    title_bar_rect: &mut eframe::epaint::Rect,
     title: &str,
 ) {
     use egui::*;
 
     let painter = ui.painter();
 
-    let title_bar_response = ui.interact(title_bar_rect, Id::new("title_bar"), Sense::click());
-
+    let title_bar_response = ui.interact(*title_bar_rect, Id::new("title_bar"), Sense::click());
+    title_bar_rect.set_top(10.0);
     painter.text(
-        title_bar_rect.center(),
-        Align2::CENTER_CENTER,
+        title_bar_rect.center_top(),
+        Align2::CENTER_TOP,
         title,
         FontId::proportional(20.0),
         ui.style().visuals.text_color(),
@@ -105,7 +104,7 @@ fn title_bar_ui(
         frame.drag_window();
     }
 
-    ui.allocate_ui_at_rect(title_bar_rect, |ui| {
+    ui.allocate_ui_at_rect(title_bar_rect.to_owned(), |ui| {
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             ui.spacing_mut().item_spacing.x = 0.0;
             ui.visuals_mut().button_frame = false;
